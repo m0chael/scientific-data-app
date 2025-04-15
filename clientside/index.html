@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Science Data App v0.1.0</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="initial-terms-notice" class="hide">
+  <div style="max-width:800px;">
+    <h2>Welcome to the <span class="highlight">Science Data App</span> v0.1.0</h2>
+    <h3>Please read these terms and conditions of use:</h3>
+    <p>Science Data App is a desktop application designed to display and graph certain Open Data formats. It allows you to put your data files into a folder and link the application. </p>
+    <p><strong>By using this application, you acknowledge and accept the following terms of use</strong></p>
+    <ol>
+      <li>This software is only to be used for viewing OpenData.</li>
+      <li>You are responsible for ensuring the legality, accuracy, and appropriateness of OpenData you try to open.</li>
+      <li>Science Data App is custom made software designed and written by Michael (m0chael). This software is released open source. Pull requests and issues are welcome on github.</li>
+      <li>Support for this open source application may be provided as a service from the author and is not guaranteed and should be considered as being as-is.</li>
+      <li>The development and maintenance of the Science Data App are funded through donations and sponsoring.</li>
+      <li>Michael (m0chael) shall not be held liable for any damages arising from the use of Science Data App.</li>
+      <li>Michael (m0chael) may modify these terms of use at any time without prior notice.</li>
+      <li>It is your responsibility to use the application responsibly and ensure that you have the necessary rights and permissions to read the data you import.</li>
+      <li>Please make backups of your data before importing it into this software. Michael (m0chael) and the software are not liable in case of data loss.</li>
+    </ol>
+    <p>If you have any questions or concerns, please contact Michael (m0chael).</p>
+  </div>
+  <div class="button-row">
+      <button onclick="acceptInitialTerms()" style="background-color:lightskyblue;">Yes, I agree</button>
+      <button>I don't agree, and I will close this application</button>
+  </div>
+</div>
+<div id="help" class="hide">
+  <div style="max-width:700px;">
+    <button id="show-advanced-menu" class="hide">Toggle folder settings</button>
+    <button onclick="hideHelpMenu()">←</button>
+    <h2><span class="highlight">Science Data App</span> v0.1.0</h2>
+    <p>This is a viewer and renderer for <strong>Open Data</strong>. It is free software and "batteries not included". When using this science related software, please be mindful of data licenses. This software works fully offline.</p>
+    <h2>Current library folder:</h2>
+    <p id="current-library-folder"></p>
+    <h2>About the author:</h2>
+    <p>My name is Michael (m0chael) and I'm a programmer from Canada.</p>
+    <h2>Getting support:</h2>
+    <p>To get help, please check the FAQ on the homepage. Please go to "Settings" + "Open External Homepage".</p>
+    <h2>Tested compatible formats</h2>
+    <ul>
+      <li>✓ <span class="highlight">geoJSON</span> - USGS Earthquakes</li>
+      <li>✓ <span class="highlight">CSV</span> - National Centers for Environmental Information</li>
+      <li>✓ <span class="highlight">CSV</span> - Kaggle Scientific CSV</li>
+    </ul>
+    <p> If you appreciate the <span class="highlight">Science Data App</span>, please consider supporting the development of this application. To request a new format to be supported, please make an issue on Github!</p>
+  </div>
+</div>
+<nav>
+  <div style="-webkit-app-region:drag;" class="message-notice hide">
+      <div class="sub-menu">
+          <button id="open-help" class="no-drag">?</button>
+          <button id="set-library-folder" class="hide no-drag" onclick="postToSetFolder()">Set this library folder</button>
+          <button id="open-file-button" class="hide no-drag" onclick="openScienceFile()">Hide data</button>
+          <button id="load-all-button" class="hide no-drag" onclick="loadAllButton()">Load entire CSV table</button>
+          <button id="print-button" class="hide no-drag">Print</button>
+      </div>
+      <div id="search-input-box" class="no-drag hide autocomplete">
+        <input id="search-input" class="no-drag" type="text" name="search-input" autocomplete="off" placeholder="Select an item from your library...">
+      </div>
+  </div>
+</nav>
+<div id="search-results" class="inverted-border-radius hide"><ul></ul></div>
+<main class="hide">
+  <h1 id="title">Reader at </h1>
+  <div style="padding-top:2rem;" class="grid">
+      <div id="potential-charting-headers"></div>
+      <canvas id="current-chart" class="hide"></canvas>
+  </div>
+  <div style="padding:0 10rem 0 10rem;">
+  </div>
+  <ul id="science-file" class="hide"></ul>
+</main>
+<script src="chart.js"></script>
+<script src="app-loader-variables.js"></script>
+<script>
+    function q(incoming) { return document.querySelector(incoming); };
+
+    function renderThisEarthquakeData() {
+      const ctx = q('#current-chart');
+      ctx.innerHTML = "";
+
+      if (THIS_CURRENT_CHART) {
+        THIS_CURRENT_CHART.destroy();
+        THIS_CURRENT_CHART = null;
+      }
+
+      if (IS_DETECTED_EARTHQUAKE_FILE) {
+        let thisResult = CURRENT_RESULT;
+        thisResult = JSON.parse(thisResult["file"]);
+
+        let theseDateTimes = [];
+        let THIS_DATE_INDEX = 0;
+        let THESE_SPECIFIC_VALUES = [];
+
+        for (let row=0; row < thisResult["features"].length; row++) {
+          theseDateTimes.push(thisResult["features"][row]["properties"]["time"]);
+          THESE_SPECIFIC_VALUES.push(thisResult["features"][row]["properties"]["mag"]);
+        }
+
+        try {
+          console.log("Building chart..");
+          currentChartBuilder(theseDateTimes, THESE_SPECIFIC_VALUES, "earthquake_magnitudes");
+        } catch {
+          alert("Failed to generate chart for this header...");
+        }
+      }
+    };
+
+    function isThisDateTypeHeader(someValue) {
+      let thisValue = someValue.replace(/"/g, '');
+      thisValue = thisValue.toLowerCase();
+
+      if (DATE_TYPE_HEADERS_FOR_LOOKUP.includes(thisValue)) {
+        return true;
+      } else {
+        console.log("Returning false");
+        return false;
+      }
+    };
+
+    function renderThisValue(incomingNode) {
+      const ctx = q('#current-chart');
+      ctx.innerHTML = "";
+
+      if (THIS_CURRENT_CHART) {
+        THIS_CURRENT_CHART.destroy();
+        THIS_CURRENT_CHART = null;
+      }
+
+      let thisResult = CURRENT_RESULT;
+      let THIS_VALUES_INDEX = incomingNode.getAttribute("data-index");
+      let thisTitle = incomingNode.innerText;
+
+      let theseDateTimes = [];
+      let THIS_DATE_INDEX = 0;
+      let THESE_SPECIFIC_VALUES = [];
+      let gotFirstDateHeaderPresent = false;
+      for (let row=0; row < thisResult.file.length; row++) {
+        for (let item = 0; item < thisResult.file[row].length; item++) {
+          if (row == 0) {
+            if (!gotFirstDateHeaderPresent) {
+              if (isThisDateTypeHeader(thisResult.file[0][item])) {
+                gotFirstDateHeaderPresent = true;
+                THIS_DATE_INDEX = item;
+              }
+            }
+          } else {
+            if (item == THIS_DATE_INDEX) {
+              theseDateTimes.push(thisResult.file[row][item].replace(/"/g, ''));
+            }
+
+            if (item == THIS_VALUES_INDEX) {
+                THESE_SPECIFIC_VALUES.push(thisResult.file[row][item].replace(/"/g, ''));
+            }
+          }
+        }
+      }
+
+      if (gotFirstDateHeaderPresent) {
+        try {
+          console.log("Building chart..");
+          currentChartBuilder(theseDateTimes, THESE_SPECIFIC_VALUES, thisTitle);
+        } catch {
+          alert("Failed to generate chart for this header...");
+        }
+      } else {
+        alert("Failed to generate chart, missing 'date' type property....");
+      }
+    };
+
+    function openScienceFile() {
+      if (q("#science-file").classList.contains("hide")) {
+        q("#open-file-button").innerText = "Hide data";
+        q("#science-file").classList.remove("hide")
+      } else {
+        q("#open-file-button").innerText = "View data";
+        q("#science-file").classList.add("hide");
+      }
+    };
+
+
+    function loadAllButton() {
+      if (IS_DISPLAYING_SHORT_TABLE) {
+        IS_LOADING_ENTIRE_TABLE = true;
+        IS_DISPLAYING_SHORT_TABLE = false;
+        q("#load-all-button").classList.add("button-loading");
+        q("#load-all-button").innerText = "Loading...";
+        setTimeout(function(){
+            if (CURRENT_VIEWING_TYPE == ".csv") {
+              tableCsvBuilder(CURRENT_RESULT);
+            } else if (CURRENT_VIEWING_TYPE == ".json") {
+                alert("no json yet");
+            } else if (CURRENT_VIEWING_TYPE == ".geojson") {
+              buildGeoJsonEarthquakeItem(CURRENT_RESULT);
+            }
+            q("#load-all-button").classList.remove("button-loading");
+            q("#load-all-button").innerText = "Showing all data";
+            q("#load-all-button").disabled = true;
+        },100);
+      } else {
+        q("#load-all-button").innerText = "Already loaded full table";
+        setTimeout(function(){
+          q("#load-all-button").innerText = "Load entire CSV table";
+        });
+      }
+    };
+
+    function searchItemBuilder(incomingSearchTerm, shouldHide) {
+      console.log("Incoming");
+      console.log(incomingSearchTerm);
+      let someBuilder = "";
+      let countItems = 0;
+
+      for (let f=0; f < ALL_FILES.length; f++)  {
+
+        var regex = new RegExp(incomingSearchTerm.replace(/\s+/g, '\\s*'), 'i');
+        let isMatch = regex.test(ALL_FILES[f]["path"]);
+
+        if (ALL_FILES[f]["item"].includes(incomingSearchTerm) || ALL_FILES[f]["path"].includes(incomingSearchTerm) || isMatch) {
+          countItems = countItems + 1;
+
+          let regexGetFolderName = new RegExp(`${CURRENT_LIBRARY_FOLDER}/([^/]+)/`);
+          let matchForFolderName = ALL_FILES[f]["path"].match(regexGetFolderName);
+
+          if (matchForFolderName && matchForFolderName[1]) {
+            let extractedFolderName = matchForFolderName[1];
+            someBuilder += '<li onclick="openThisItem('+f+')"><div>'+extractedFolderName+'</div><div class="file-names">'+ALL_FILES[f]["item"]+'</div></li>';
+          } else {
+            console.log("Folder name not found.");
+            someBuilder += '<li onclick="openThisItem('+f+')"><div>Main folder</div><div class="file-names">'+ALL_FILES[f]["item"]+'</div></li>';
+          }
+        }
+      }
+
+      if (countItems == 0) {
+        if (ALL_FILES.length == 0) {
+          someBuilder += '<li>No items in library, try setting a folder...</li>';
+        } else {
+          someBuilder += '<li>Nothing found for this filename...</li>';
+        }
+      } else if (countItems >= 12) {
+        q("#search-results ul").classList.add("extra-padding");
+      } else if (countItems < 12) {
+        q("#search-results ul").classList.remove("extra-padding");
+      }
+
+      q("#search-results ul").innerHTML = someBuilder;
+
+      if (shouldHide) {
+        q("#search-results").classList.add("hide");
+        q(".message-notice").classList.remove("no-right-radius")
+      } else {
+        q("#search-results").classList.remove("hide");
+        q(".message-notice").classList.add("no-right-radius")
+      }
+
+      if (ALL_FILES.length == 0) {
+
+        q("#open-help").innerText = "?";
+      } else {
+        q("#open-help").innerText = ALL_FILES.length + " items";
+        q("#open-help").classList.add("numbered");
+      }
+
+    };
+
+    function displayLoadedMenu() {
+      q("#open-file-button").classList.add("hide");
+      q("#load-all-button").classList.add("hide");
+      q("#print-button").classList.add("hide");
+      q(".message-notice").classList.remove("hide");
+    };
+
+    function setToFlashing(item, shouldTurnOn) {
+      if (shouldTurnOn) {
+        item.classList.add("flashing");
+      } else {
+        item.classList.remove("flashing");
+      }
+    };
+
+    function sendThisSearch() {
+      console.log(q("#search-input").value);
+    };
+
+    function openThisItem(incoming) {
+      q("#search-results").classList.add("hide");
+      q(".message-notice").classList.remove("no-right-radius")
+      pullGenericItem(incoming);
+    };
+
+    function pullGenericItem(incoming) {
+
+      if (THIS_CURRENT_CHART) {
+        THIS_CURRENT_CHART.destroy();
+        THIS_CURRENT_CHART = null;
+      }
+
+      let formDataForSaving = new FormData();
+      formDataForSaving.append('incoming', ALL_FILES[incoming]["path"]);
+
+      fetch('http://localhost:3000/getitem', {
+        method: 'POST',
+        body: formDataForSaving
+      })
+        .then(response => {
+          return response.json();
+        }).then((thisResult) => {
+          if (thisResult["success"]) {
+            IS_DISPLAYING_SHORT_TABLE = true;
+            IS_DISPLAYING_ITEM = true;
+            CURRENT_RESULT = thisResult;
+            q("#search-input").value = ALL_FILES[incoming]["item"];
+            q("#search-results").classList.add("hide");
+            q("#science-file").classList.add("hide");
+            q("#open-file-button").classList.remove("hide");
+            q("#print-button").classList.remove("hide");
+            q("#load-all-button").classList.remove("hide");
+            q("#load-all-button").innerText = "Load all data";
+            q("#load-all-button").disabled = false;
+
+            if (CURRENT_RESULT["type"] == ".csv") {
+              CURRENT_VIEWING_TYPE = ".csv";
+              tableCsvBuilder(CURRENT_RESULT);
+            } else if (CURRENT_RESULT["type"] == ".json") {
+              CURRENT_VIEWING_TYPE = ".json";
+              buildJsonItem(CURRENT_RESULT);
+            } else if (CURRENT_RESULT["type"] == ".geojson" && CURRENT_RESULT["variant"] == "earthquake") {
+              CURRENT_VIEWING_TYPE = ".geojson";
+              buildGeoJsonEarthquakeItem(CURRENT_RESULT);
+            }
+
+            q("#title").innerHTML = 'Reader at <span class="highlight">' + thisResult.file[1][1] + '</span>';
+            q("#open-help").innerText = ALL_FILES.length + " items";
+            q("main").classList.remove("hide");
+            q("#science-file").classList.remove("hide");
+          }
+        }).catch(error => {
+          console.error('Error:', error);
+          alert(error);
+          q("#open-help").innerText = "Libary of " + ALL_FILES.length + " items";
+        });
+    };
+
+    function getThisLibrary() {
+      fetch('http://localhost:3000/getlibrary', {
+        method: 'GET'
+      }).then(response => {
+        return response.json();
+      }).then((thisResult) => {
+        if (thisResult.success) {
+          ALL_FILES = JSON.parse(thisResult["data"]);
+          CURRENT_LIBRARY_FOLDER = ALL_FILES["folder"];
+          ALL_FILES = ALL_FILES["array"];
+          displayLoadedMenu();
+          q("#open-help").innerText = "Libary of " + ALL_FILES.length + " items";
+          searchItemBuilder("", true);
+          q("#set-library-folder").innerText = "Loaded a library";
+          q("#set-library-folder").disabled = true;
+          q("#search-input-box").classList.remove("hide");
+          q("#set-library-folder").classList.add("hide");
+          q("#current-library-folder").innerText = CURRENT_LIBRARY_FOLDER;
+        } else {
+          q("#set-library-folder").classList.remove("hide");
+          if (ALL_FILES.length == 0) {
+            setToFlashing(q("#set-library-folder"), true);
+            searchItemBuilder("", true);
+          }
+          displayLoadedMenu();
+        }
+
+        showAdvancedMenu(true);
+      }).catch(error => {
+        console.error('Error:', error);
+      });
+    };
+
+    function postToSetFolder() {
+      IS_SETTING_FOLDER_INITIALLY = true;
+
+      let formDataForSaving = new FormData();
+      fetch('http://localhost:3000/setfolder', {
+        method: 'POST',
+        body: formDataForSaving
+      })
+        .then(response => {
+          return response.json();
+        }).then((thisResult) => {
+          if (thisResult.success) {
+            CURRENT_LIBRARY_FOLDER = thisResult.folder;
+            q("#set-library-folder").innerText = "Loading...";
+            setTimeout(function(){
+              getThisLibrary();
+            },1000);
+            setToFlashing(q("#set-library-folder"), false);
+          }
+        }).catch(error => {
+          console.error('Error:', error);
+        });
+    };
+
+    function hideHelpMenu() {
+      q("#help").classList.add("hide");
+      q("#open-help").classList.remove("hovering");
+
+      if (ALL_FILES.length == 0) {
+        q("#open-help").innerText = "?";
+      } else {
+        q("#open-help").innerText = ALL_FILES.length + " items";
+        if (IS_DISPLAYING_ITEM) {
+          q("#open-file-button").classList.remove("hide");
+          q("#load-all-button").classList.remove("hide");
+          q("#print-button").classList.remove("hide");
+        }
+      }
+    };
+
+    function formatDateString(incomingDate) {
+      const date = new Date(incomingDate);
+      const formattedDate = date.toLocaleString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }).replace(",", "");
+
+      return formattedDate;
+    };
+
+    function buildJsonItem(thisResult) {
+      q("#science-file").innerText = thisResult["file"];
+    };
+
+    function buildGeoJsonEarthquakeItem(thisResult) {
+      IS_DETECTED_EARTHQUAKE_FILE = false;
+
+      let thisFile = JSON.parse(thisResult["file"]);
+      let thisBuilder = "";
+      let fileItemBuilder = "";
+      let EARTHQUAKE_START_DATE = "";
+      let EARTHQUAKE_END_DATE = "";
+
+      if (typeof thisFile["metadata"] != 'undefined') {
+        if (thisFile["metadata"].title.includes("USGS All Earthquakes") || thisFile["metadata"].title.includes("USGS Earthquakes")) {
+          IS_DETECTED_EARTHQUAKE_FILE = true;
+          thisBuilder += '<h3>Detected USGS Earthquakes</h3>';
+          thisBuilder += '<h3>Dates</h3><div id="load-date-range-quakes" class="highlight">Waiting to load</div><h3>Chart options</h3>';
+
+          thisBuilder += '<button class="hover-th" onclick="renderThisEarthquakeData()">Magnitudes x Timestamp</button>';
+        }
+      }
+
+      if (IS_DETECTED_EARTHQUAKE_FILE) {
+        let thisMetadata = thisFile["metadata"];
+        thisBuilder += '<div class="earthquake-metadata hide">';
+        thisBuilder += '<ul>';
+
+        for (let key in thisMetadata) {
+          if (thisMetadata.hasOwnProperty(key)) {
+              thisBuilder += '<li>' + thisMetadata[key] + '</li>';
+          }
+        }
+
+        thisBuilder += '</ul></div>';
+
+        fileItemBuilder += '<ul class="earthquake-list">';
+
+        if (typeof thisFile["features"] != 'undefined') {
+          let thisProperties = null;
+
+          let lengthToUse = VALUE_TO_MAX_OUT_AT;
+
+          let valueToMaxOutAt = thisFile["features"].length;
+          if (thisFile["features"].length > VALUE_TO_MAX_OUT_AT) {
+            valueToMaxOutAt = VALUE_TO_MAX_OUT_AT;
+          }
+
+          if (IS_LOADING_ENTIRE_TABLE) {
+            valueToMaxOutAt = thisFile["features"].length;
+          }
+
+          let startTimeDate = new Date(thisFile["features"][0]["properties"]["time"]);
+          let startTimeDateString = startTimeDate.toISOString();
+          EARTHQUAKE_START_DATE = formatDateString(startTimeDateString);
+
+          let endTimeDate = new Date(thisFile["features"][thisFile["features"].length-1]["properties"]["time"]);
+          let endTimeDateString = endTimeDate.toISOString();
+          EARTHQUAKE_END_DATE = formatDateString(endTimeDateString);
+
+          let thisTimeDate = "";
+          let thisDateString = "";
+          let thisMagClass = "mini-mag";
+
+          for (let feature = 0; feature < valueToMaxOutAt; feature++) {
+            thisProperties = thisFile["features"][feature]["properties"];
+            fileItemBuilder += '<li onclick="openDetailedQuakeView('+feature+')" class="bubble-item">';
+
+            thisMagClass = "mini-mag";
+            if (thisProperties["mag"] < 1) {
+              thisMagClass = "mini-mag";
+            } else if (thisProperties["mag"] < 4) {
+              thisMagClass = "small-mag";
+            } else if (thisProperties["mag"] <= 5) {
+              thisMagClass = "medium-mag";
+            } else if (thisProperties["mag"] > 5) {
+              thisMagClass = "larg-mag"
+            }
+
+            fileItemBuilder += '<span class="earthquake-mag '+thisMagClass+'">'+thisProperties["mag"] + '</span>';
+            thisTimeDate = new Date(thisProperties["time"]);
+            thisDateString = thisTimeDate.toISOString();
+            fileItemBuilder += '<span class="times">'+formatDateString(thisDateString)+'</span><span class="place">'+thisProperties["place"]+'</span></li>';
+
+          }
+        }
+        fileItemBuilder += '</ul>';
+
+      } else {
+        fileItemBuilder = "";
+      }
+
+      q("#potential-charting-headers").innerHTML = thisBuilder;
+      q("#science-file").innerHTML = fileItemBuilder;
+      q("#science-file").classList.remove("hide");
+      q("#load-date-range-quakes").innerHTML = '<span class="highlight">'+EARTHQUAKE_START_DATE+'</span> to <span class="highlight">'+EARTHQUAKE_END_DATE+'</span>';
+    };
+
+    function tableCsvBuilder(thisResult) {
+      q("#open-file-button").classList.remove("hide");
+      q("#load-all-button").classList.remove("hide");
+
+      if (THIS_CURRENT_CHART) {
+        THIS_CURRENT_CHART.destroy();
+        THIS_CURRENT_CHART = null;
+      }
+
+      q("#science-file").innerHTML = "";
+
+      let builder = "";
+      let chartingHeaders = '<h3>Detected Scientific CSV file</h3><h3>Dates</h3>';
+      chartingHeaders += '<div id="load-date-range" class="highlight">Waiting to load</div><h3>Headers for charting</h3>';
+
+      builder += '<table><tr><th>Row</th>'
+
+      let gotFirstDateHeaderPresent = false;
+      let thisLocalDateIndex = 0;
+
+      for (let i = 0; i < thisResult.file[0].length; i++) {
+        if (!gotFirstDateHeaderPresent) {
+          if (isThisDateTypeHeader(thisResult.file[0][i])) {
+            gotFirstDateHeaderPresent = true;
+            thisLocalDateIndex = i;
+          }
+        }
+
+        if (thisResult.file[0][i] == "") {}
+        else {
+          let thisResultValue = thisResult.file[0][i].replace(/"/g, '');
+          thisResultValue = thisResultValue.toLowerCase();
+          let thisResultWasInArrayOfEmpties = ALL_NON_LINKING_HEADERS.includes(thisResultValue);
+
+          if (thisResultWasInArrayOfEmpties) {
+              builder += '<th>'+thisResult.file[0][i].replace(/"/g, '')+'</th>';
+          } else if (thisResultValue.includes("units") || thisResultValue.includes("attributes")){
+              builder += '<th>'+thisResult.file[0][i].replace(/"/g, '')+'</th>';
+          } else {
+              chartingHeaders += '<button class="hover-th" data-index="'+i+'" onclick="renderThisValue(this)">'+thisResult.file[0][i].replace(/"/g, '')+'</button>';
+              builder += '<th class="hover-th" data-index="'+i+'" onclick="renderThisValue(this)">'+thisResult.file[0][i].replace(/"/g, '')+'</th>';
+          }
+        }
+      }
+
+      q("#potential-charting-headers").innerHTML = chartingHeaders;
+
+      let valueToMaxOutAt = thisResult.file.length;
+      if (thisResult.file.length > VALUE_TO_MAX_OUT_AT) {
+        valueToMaxOutAt = VALUE_TO_MAX_OUT_AT;
+      }
+
+      if (IS_LOADING_ENTIRE_TABLE) {
+        valueToMaxOutAt = thisResult.file.length;
+      }
+
+      if (gotFirstDateHeaderPresent) {
+        FIRST_DATE_OF_THIS_TABLE = thisResult.file[1][thisLocalDateIndex].replace(/"/g, '');
+        LAST_DATE_OF_THIS_TABLE = thisResult.file[thisResult.file.length-1][thisLocalDateIndex].replace(/"/g, '');
+      }
+
+      q("#load-date-range").innerHTML = '<span class="highlight">' + FIRST_DATE_OF_THIS_TABLE + '</span> to <span class="highlight">' + LAST_DATE_OF_THIS_TABLE + '</span>';
+
+      for (let row=0; row < valueToMaxOutAt; row++) {
+        if (row == 0) {
+        } else {
+          builder += '<tr>';
+          for (let item = 0; item < thisResult.file[row].length; item++) {
+            if (row == 0) { }
+            else {
+              if (item == 0) {
+                builder += '<td>'+row+'</td>';
+              }
+              builder += '<td>'+thisResult.file[row][item].replace(/"/g, '')+'</td>';
+            }
+          }
+          builder += '</tr>';
+        }
+      }
+      if (IS_DISPLAYING_SHORT_TABLE) {
+        builder += '<td onclick="loadAllButton()" class="hover-th">Click to load all data</td>'
+      }
+
+      builder += '</tr></table>';
+      q("#science-file").innerHTML = builder;
+
+      let theseSpecificValues = [];
+      IS_LOADING_ENTIRE_TABLE = false;
+    };
+
+    function currentChartBuilder(theseDateTimes, theseSpecificValues, thisTitle) {
+      if (theseSpecificValues.length > 2) {
+        const ctx = q('#current-chart');
+
+        THIS_CURRENT_CHART = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: theseDateTimes,
+            datasets: [{
+              label: thisTitle,
+              data: theseSpecificValues,
+              borderWidth: 1,
+              beginAtZero: false
+
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: false
+              },
+              x: {
+                display: false
+              }
+            }
+          }
+        });
+      } else {
+        alert("Chart values are less than 2 items.")
+      }
+    };
+
+    q("#open-help").addEventListener("click", function(){
+      if (q("#help").classList.contains("hide")) {
+        q("#open-help").innerText = "Close details";
+        q("#open-file-button").classList.add("hide");
+        q("#load-all-button").classList.add("hide");
+        q("#print-button").classList.add("hide");
+        q("#help").classList.remove("hide")
+        q("#open-help").classList.add("hovering");
+      } else {
+        hideHelpMenu();
+      }
+    });
+
+    q('#print-button').addEventListener('click', function() {
+      window.print();
+    });
+
+    q("#search-input").addEventListener("focus", function(){
+      q("#search-results").classList.remove("hide");
+      q(".message-notice").classList.add("no-right-radius")
+    });
+
+    document.addEventListener("click", function(event) {
+      let thisInput = q("#search-input");
+      if (!thisInput.contains(event.target)){
+        q("#search-results").classList.add("hide");
+        q(".message-notice").classList.remove("no-right-radius")
+      }
+    });
+
+    q("#search-input").addEventListener("input", function(){
+      searchItemBuilder(q("#search-input").value, false);
+    });
+
+
+    function toggleNightDayClient() {
+      if (IS_NIGHT_ON) {
+        q("body").classList.remove("night");
+        IS_NIGHT_ON = false;
+        localStorage.setItem('sciencedatareader_nightday', false);
+      } else {
+        q("body").classList.add("night");
+        IS_NIGHT_ON = true;
+        localStorage.setItem('sciencedatareader_nightday', true);
+      }
+    };
+
+    function parseForNightDay() {
+      let someNightDay = localStorage.getItem('sciencedatareader_nightday');
+      if (someNightDay == "true") {
+        IS_NIGHT_ON = true;
+        q("body").classList.add("night");
+      } else {
+        IS_NIGHT_ON = false;
+        q("body").classList.remove("night");
+      }
+    };
+
+
+    function showAdvancedMenu(isInitialLoad) {
+      if (isInitialLoad && ALL_FILES.length != 0) {
+        q("#set-library-folder").classList.add("hide");
+      } else {
+        if (IS_SHOWING_ADVANCED_MENU) {
+          q("#set-library-folder").classList.add("hide");
+          q("#set-library-folder").disabled = true;
+          q("#set-library-folder").innerText = "Set a library folder";
+          q("#set-library-folder").classList.remove("flashing");
+          q("#current-library-folder").classList.add("hide");
+          IS_SHOWING_ADVANCED_MENU = false;
+        } else {
+          q("#set-library-folder").classList.remove("hide");
+          q("#set-library-folder").disabled = false;
+          q("#set-library-folder").innerText = "Set a new library folder";
+          q("#set-library-folder").classList.add("flashing");
+          q("#current-library-folder").classList.remove("hide");
+          IS_SHOWING_ADVANCED_MENU = true;
+        }
+      }
+    };
+
+    function loadInitialTerms() {
+      const storedValue = localStorage.getItem('sciencedatareader_terms');
+
+      if (storedValue == "true") {
+          q("#initial-terms-notice").remove();
+      } else {
+          q("#initial-terms-notice").classList.remove("hide");
+      }
+    };
+
+    function displayInitialTerms() {
+      q("#initial-terms-notice").classList.remove("hide");
+    };
+
+
+    function acceptInitialTerms() {
+      localStorage.setItem('sciencedatareader_terms', true);
+      q("#initial-terms-notice").remove();
+    };
+
+    loadInitialTerms();
+    parseForNightDay();
+    getThisLibrary();
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Simple git ignore for the scientific data app
+node_modules/
+.env
+.env.local
+.env.*.local
+.DS_Store
+.npm/
+.eslintcache
+.node_repl_history
+.git/
+.gitattributes
+package-lock.json

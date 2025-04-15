@@ -1,0 +1,454 @@
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+.hide {
+  display:none;
+}
+.basic-link {
+  color:black;
+  text-decoration: none;
+}
+.night .basic-link {
+  color:white;
+}
+#title {
+  display: none;
+}
+
+.button-loading {
+  background-color: lightskyblue;
+}
+
+.flashing {
+  background-color: rgb(220, 242, 255); /* Initial color */
+  animation-name: pulse-animation;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes pulse-animation {
+  0% {
+    background-color: rgb(220, 242, 255);; /* Start color */
+  }
+  50% {
+    background-color: lightskyblue; /* Middle color */
+  }
+  100% {
+    background-color: rgb(220,242,255); /* End color */
+  }
+}
+.hover-th {
+  background-color: rgb(220, 242, 255);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.night .hover-th {
+  background-color: rgb(220, 242, 255);
+  color:black;
+}
+
+button.hover-th {
+  border:1px solid silver;
+}
+
+.hover-th:hover {
+    transform:scale(1.03);
+}
+body.night {
+  color:floralwhite;
+  background-color:rgb(52, 52, 52);
+}
+.night .bubble-item {
+  background-color:black;
+  border:1px solid rgb(52,52,52);
+}
+.night canvas {
+  background-color:black;
+  border:1px solid rgb(52, 52, 52);
+}
+.night #help, .night #initial-terms-notice {
+  background-color: rgb(52, 52, 52);
+  color:floralwhite;
+  border-top:1px solid black;
+}
+.night .message-notice {
+  background-color: rgb(27, 27, 27);
+  border-bottom:1px solid rgb(27, 27, 27);
+}
+
+.night #search-results {
+  background-color:rgb(27,27,27);
+  border-bottom:1px solid black;
+  color:floralwhite;
+}
+
+.night #help {
+  border-top:1px solid black;
+}
+body {
+    background-image: url('../earth_transparent.png');
+    background-position: center center;
+    background-size: 200px 200px;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-color: floralwhite;
+    margin:0;
+    padding:0;
+}
+.night table {
+  background-color:transparent;
+  color:black;
+}
+
+.night td, .night th {
+  background-color: black;
+  color:floralwhite;
+}
+table {
+  display: block;
+  max-width: -moz-fit-content;
+  max-width: fit-content;
+  overflow-x: auto;
+  white-space: nowrap;
+  background-color: floralwhite;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  border-radius: 0.25rem;
+  text-align: left;
+  padding: 8px;
+  background-color: white;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width:100%;
+  grid-gap:2rem;
+  margin-top:50px;
+}
+
+.fake-button {
+    display:inline-block;
+}
+
+button, .fake-button {
+  border-radius: 0.5rem;
+  padding:0.5rem 1rem 0.5rem 1rem;
+  background-color: rgb(221, 221, 221);
+  border:1px solid silver;
+  color:black;
+  outline: none;
+  cursor: pointer;
+  font-size:16px;
+  transition: transform 0.1s ease, background-color 0.1s ease;
+}
+canvas {
+  background-color: white;
+  border:1px solid silver;
+  margin-top:1rem;
+  border-radius: 0.5rem;
+  width:700px !important;
+  height:500px !important;
+}
+button:hover {
+    transform:scale(1.03);
+}
+h2 span.highlight, p span.highlight, li span.highlight {
+    border-bottom: 2px solid lightskyblue;
+}
+main span.highlight {
+    font-size:16px;
+    font-weight: 300;
+    border-bottom:2px solid lightskyblue;
+}
+.fake-button.highlight {
+  cursor: default;
+  color:black;
+}
+
+nav ul {
+  list-style-type: none;
+  display: flex;
+  padding-left: 0;
+}
+
+main, .main {
+    padding:5rem 1rem 5rem 1rem;
+}
+
+.message-notice {
+  width:calc(100% - 1rem);
+}
+
+.drop:before {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 30px solid rgba(255,255,255,1);
+  top: -22px;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+.autocomplete {
+  position: relative;
+  display: inline-block;
+  width:calc(100% - 545px);
+  display: inline-block;
+
+}
+
+.message-notice {
+  background-color: floralwhite;
+  position: fixed;
+  border-right:1px solid silver;
+  border-bottom:1px solid silver;
+  text-align: left;
+  padding-left:1rem;
+  padding-top:1rem;
+}
+
+.message-notice.no-right-radius {
+  border-bottom-right-radius: 0;
+}
+
+.night input {
+  border:1 px solid black;
+}
+
+input:focus-visible {
+  outline:2px solid rgb(14, 47, 154);
+}
+
+.night input:focus-visible {
+  outline:2px solid lightskyblue;
+}
+input {
+  border: 1px solid silver;
+  background-color: #f1f1f1;
+  border-radius: 0.5rem;
+  padding: 10px;
+  font-size: 16px;
+  margin-bottom:1rem;
+}
+
+input[type=text] {
+  background-color: #f1f1f1;
+  width: 560px;
+}
+
+#help h1 {
+  color:black;
+  padding-top:10rem;
+}
+#initial-terms-notice.hide {
+    display: none;
+}
+#initial-terms-notice {
+    height:100vh!important;
+    top:0!important;
+    padding-top:0rem!important;
+    padding-bottom:3rem!important;
+}
+#initial-terms-notice p {
+    margin:0;
+    padding:0.25rem;
+}
+#initial-terms-notice .button-row {
+    margin-top:1rem;
+}
+#help, #initial-terms-notice{
+  padding:2rem 1rem 3rem 1rem;
+  position: fixed;
+  left:0;
+  top:0;
+  width: calc(100%);
+  background-color: floralwhite;
+  /*border-top: 1px solid silver;*/
+  z-index: 999;
+  color:black;
+  overflow-y: auto;
+}
+.file-names {
+  font-size:0.9rem;
+  color:rgb(14, 47, 154);
+}
+#help {
+  height: 100vh;
+}
+#initial-terms-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#help.hide {
+  display:none;
+}
+#help p {
+  padding:0.25rem 0rem 0.25rem 0rem;
+  margin:0;
+}
+.hide {
+  display: none;
+}
+#search-results {
+  background-color:floralwhite;
+  border-left:1px solid silver;
+  border-bottom: 1px solid silver;
+  color:black;
+  overflow-y: auto;
+  height:auto;
+  width:60%;
+  max-height:calc(100vh - 105px);
+  position: fixed;
+  top:141px;
+  right:0;
+}
+
+
+@media screen and (max-width:900px) {
+  #search-results {
+    width:100%;
+  }
+  .message-notice {
+    text-align: left;
+  }
+  .autocomplete {
+    width:calc(100% - 100px);
+  }
+}
+
+#search-results ul {
+  padding-left:0;
+  display: flex;
+  flex-direction: column;
+  margin-top:0;
+  margin-bottom:0;
+  padding-bottom:0;
+}
+
+#search-results ul.extra-padding {
+  padding-bottom:1rem;
+}
+
+.night #search-results ul li:hover{
+  background-color: rgb(21, 62, 87,0.9);
+}
+
+.night .file-names {
+  color:lightblue;
+}
+
+#search-results ul li:hover {
+  background-color:lightskyblue;
+}
+
+#search-results ul li {
+  display: block;
+  cursor: pointer;
+  padding:0.5rem;
+}
+
+.sub-menu {
+    padding-bottom:0rem;
+    margin-bottom:1rem;
+    margin-top:1rem;
+}
+
+#potential-charting-headers {
+    grid-column: 1/2;
+}
+#potential-charting-headers button {
+    margin-right:0.5rem;
+    margin-bottom:0.5rem;
+}
+
+#water-file {
+    padding-left:0;
+}
+
+ol {
+  padding-top:0;
+  margin-top:0.5rem;
+  margin-bottom:0.5rem;
+}
+.earthquake-list, .water-list {
+  list-style-type: none;
+  padding-left:0;
+}
+
+.bubble-item {
+  background-color: white;
+  margin-bottom:0.1rem;
+  position:relative;
+  padding:3rem 0 1rem 0;
+  z-index: -1;
+  border:1px solid silver;
+  border-radius: 0.5rem;
+}
+
+.earthquake-mag {
+  position: absolute;
+  padding:0.3rem 1rem 0.3rem 1rem;
+  top:0.5rem;
+  left:0.5rem;
+  border-radius: 0.3rem;
+  font-weight: 500;
+  border:1px solid silver;
+}
+.night .earthquake-mag {
+  border:1px solid rgb(52,52,52);
+}
+.night .mini-mag {
+  background-color: rgb(109, 109, 109);
+}
+.night .small-mag {
+  background-color: rgb(0, 83, 0);
+}
+.night .medium-mag {
+  background-color: rgb(142, 74, 84);
+}
+.night .large-mag {
+  background-color: hotpink;
+}
+.mini-mag {
+  background-color: rgb(221, 221, 221);
+}
+.small-mag {
+  background-color: lightgreen;
+}
+.medium-mag {
+  background-color: lightpink;
+}
+.larg-mag {
+  background-color: hotpink;
+}
+.times {
+  position: absolute;
+  padding:0.3rem 1rem 0.3rem 1rem;
+  top:0.5rem;
+  right:0.5rem;
+  border-radius: 0.3rem;
+  color:white;
+  background-color: black;
+  border:1px solid silver;
+}
+.place {
+  padding-left:10px;
+}
+ol li {
+  margin-bottom:0.1rem;
+}
